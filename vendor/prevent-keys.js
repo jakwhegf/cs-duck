@@ -1,0 +1,1 @@
+!function(){if(window.self!==window.top){try{window.top.postMessage({type:"preventKeysRequest"},"*")}catch(e){}window.addEventListener("message",(function(e){if(e.data&&"preventKeysResponse"===e.data.type&&e.data.prevent){var t={Space:!0,ArrowUp:!0,ArrowDown:!0,ArrowLeft:!0,ArrowRight:!0};window.addEventListener("keydown",(function(e){t[e.code]&&e.preventDefault()}),!1)}}))}}();
