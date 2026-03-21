@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading...</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; background:#000; overflow:hidden; }
+  #unity-canvas { display:block; width:100vw; height:100vh; outline:none; background:#000; }
+
+  #loading {
+    position:fixed; inset:0; background:#080808;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+    z-index:99; transition:opacity .7s ease;
+  }
+  #loading.gone { opacity:0; pointer-events:none; }
+
+  .ttl {
+    font:900 28px/1 'Segoe UI',sans-serif;
+    color:#fff; letter-spacing:5px; text-transform:uppercase;
+  }
+  .bar-bg {
+    width:220px; height:4px;
+    background:#1a1a1a; border-radius:2px; overflow:hidden;
+  }
+  #bar {
+    height:100%; width:0%;
+    border-radius:2px; transition:width .25s;
+  }
+  #pct { color:#555; font:11px monospace; letter-spacing:2px; }
+  #errmsg {
+    display:none; color:#f55; font:13px sans-serif;
+    text-align:center; max-width:360px; line-height:1.7;
+    white-space:pre-line;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ttl" id="ttl">Loading...</div>
+  <div class="bar-bg"><div id="bar"></div></div>
+  <div id="pct">0%</div>
+  <div id="errmsg"></div>
+</div>
+
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+
+<script>
+// jsDelivr URL của chính file này — tự động resolve config.json cùng thư mục
+const CONFIG_URL = (function() {
+  // Nếu chạy từ jsDelivr, lấy base URL từ script src
+  // Nếu chạy local/GitHub Pages, dùng relative path
+  const scripts = document.querySelectorAll("script");
+  const last    = scripts[scripts.length - 1];
+  const base    = last.src
+    ? last.src.replace(/\/[^/]+$/, "/")   // thư mục chứa file này
+    : "./";
+  return base + "config.json";
+})();
+
+const loading = document.getElementById("loading");
+const ttlEl   = document.getElementById("ttl");
+const bar     = document.getElementById("bar");
+const pct     = document.getElementById("pct");
+const errMsg  = document.getElementById("errmsg");
+const canvas  = document.getElementById("unity-canvas");
+
+function setP(v) {
+  bar.style.width = Math.min(v, 100) + "%";
+  pct.textContent = Math.round(Math.min(v, 100)) + "%";
+}
+
+function showErr(msg) {
+  errMsg.style.display = "block";
+  errMsg.textContent   = msg;
+  pct.style.display    = "none";
+}
+
+// ── Bước 1: Fetch config.json ──
+fetch(CONFIG_URL)
+  .then(r => {
+    if (!r.ok) throw new Error("config.json not found: " + CONFIG_URL);
+    return r.json();
+  })
+  .then(cfg => {
+    // Apply title + color từ config
+    document.title    = cfg.title;
+    ttlEl.textContent = cfg.title;
+    bar.style.background = `linear-gradient(90deg, ${cfg.color}, #fff)`;
+    setP(5);
+    loadGame(cfg);
+  })
+  .catch(err => showErr("Config error:\n" + err.message));
+
+// ── Bước 2: Load Unity game ──
+function loadGame(cfg) {
+  const CDN   = cfg.worker + "/" + cfg.game;
+  const BUILD = CDN + "/Build";
+
+  const FILES = {
+    loader:    BUILD + "/" + cfg.files.loader,
+    data:      BUILD + "/" + cfg.files.data,
+    framework: BUILD + "/" + cfg.files.framework,
+    code:      BUILD + "/" + cfg.files.code,
+  };
+
+  // Load loader.js từ Worker
+  const s   = document.createElement("script");
+  s.src     = FILES.loader;
+
+  s.onload  = () => {
+    setP(10);
+    createUnityInstance(canvas, {
+      dataUrl:            FILES.data,
+      frameworkUrl:       FILES.framework,
+      codeUrl:            FILES.code,
+      streamingAssetsUrl: CDN + "/StreamingAssets",
+      companyName:        cfg.company  || cfg.title,
+      productName:        cfg.title,
+      productVersion:     cfg.version  || "1.0",
+    }, progress => setP(10 + progress * 90))
+    .then(() => {
+      setP(100);
+      setTimeout(() => loading.classList.add("gone"), 600);
+    })
+    .catch(err => showErr("Unity error:\n" + err));
+  };
+
+  s.onerror = () => showErr(
+    "Cannot load game files.\nWorker: " + cfg.worker
+  );
+
+  document.head.appendChild(s);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "title": "Traffic Jam 3D",
+  "worker": "https://blue-darkness-9ca3.classrom.workers.dev",
+  "game": "traffic-jam",
+  "color": "#ff6a00",
+  "company": "Traffic Jam 3D",
+  "version": "1.0",
+  "files": {
+    "loader":    "Build/TrafficJam3D_y8_3_0_32bit.loader.js",
+    "data":      "Build/TrafficJam3D_y8_3_0_32bit.data.br",
+    "framework": "Build/TrafficJam3D_y8_3_0_32bit.framework.js.br",
+    "code":      "Build/TrafficJam3D_y8_3_0_32bit.wasm.br"
+  }
+}
