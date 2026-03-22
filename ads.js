@@ -7,12 +7,12 @@
   "use strict";
 
   // ============== CONFIG ==============
-  var AD_TAG_BASE = "https://pubads.g.doubleclick.net/gampad/live/ads"
+  var AD_TAG_BASE = "https://pubads.g.doubleclick.net/gampad/ads"
     + "?iu=/23136362493/Adubg"
     + "&description_url=" + encodeURIComponent(window.location.href)
-    + "&tfcd=1&npa=0"
+    + "&tfcd=0&npa=0"
     + "&sz=640x480"
-    + "&ciu_szs=160x600%2C300x600"
+    + "&ciu_szs=300x600%2C160x600"
     + "&gdfp_req=1"
     + "&unviewed_position_start=1"
     + "&output=vast"
@@ -142,7 +142,6 @@
     }
   }
 
-  // Resize ads when window resizes
   window.addEventListener("resize", function () {
     if (adsManager) {
       try {
