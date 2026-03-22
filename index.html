@@ -116,12 +116,16 @@
 				logo.style.left = Math.floor((w - 154) / 2) + "px"; // 154 is the width of the logo
 				logo.style.top = Math.floor((h - 130) / 3) + "px";  // 130 is the height of the logo, divided by 3 for 33
 			}
+			// Thay đoạn createUnityInstance cũ bằng:
 			var myGameInstance = null;
-			createUnityInstance(canvas, config, progressHandler).then(function (instance) {
-				loadingBar.style.display = 'none';
-				myGameInstance = instance;
-				canvas = instance.Module.canvas;
-				onResize();
+			AdsManager.showPreroll(function() {
+			  createUnityInstance(canvas, config, progressHandler).then(function(instance) {
+			    loadingBar.style.display = 'none';
+			    myGameInstance = instance;
+			    window.myGameInstance = instance; // quan trọng - để ads.js truy cập được
+			    canvas = instance.Module.canvas;
+			    onResize();
+			  });
 			});
 			window.addEventListener('resize', onResize);
 			onResize();
@@ -134,8 +138,13 @@
 				document.getElementsByTagName('head')[0].appendChild(meta);
 			}
 		</script>
+			  <script src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+<script src="ads.js"></script>
 		<script type="text/javascript" src="TemplateData/gameBreakBeta.js"></script>
 	</div>
+		<div id="adContainer" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:9999;display:none">
+  <video id="adVideo" playsinline></video>
+</div>
 </body>
 
 </html>
